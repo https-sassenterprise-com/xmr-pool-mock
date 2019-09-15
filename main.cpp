@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h> 
 #include "socks.h"
-
+#include <thread>
+#include <chrono>
 using namespace std;
 
 char motd[2048] = {0};
@@ -10,25 +11,22 @@ char motd[2048] = {0};
 SOCKET cli_sck;
 bool process_line(size_t& n, char* line, size_t lnlen)
 {
-    char buffer[1024];
+    char buffer[4096];
     const char* rsp;
     const char* fmt;
-
     switch(n)
     {
     case 0:
-        fmt = "{\"id\":0,\"jsonrpc\":\"2.0\",\"error\":null,\"result\":{\"id\":\"decafbad0\",\"job\":{\"blob\":\"0000000000000000000000000000000000000000000000000000000000"
-            "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\",\"job_id\":\"00000000\",\"target\":\"ffff3f00\",\"motd\":\"%s\"},"
-            "\"extensions\":[\"backend\",\"hashcount\",\"algo\",\"motd\"],\"status\":\"OK\"}}\n";
+	fmt = "{\"id\": 1, \"error\": null, \"jsonrpc\": \"2.0\", \"result\": {\"extensions\": [\"algo\"], \"id\": \"2926288843\", \"job\": {\"height\": 122637, \"id\": \"2926288843\", \"seed_hash\": \"62fcb16d21c5420056f2cb56938f3b5c748c980fc8efb14def908f022d967ea0\", \"job_id\": \"e02c\", \"algo\": \"rx/wow\", \"blob\": \"0e0ede8799e905a5282dfffd6584a22f2b77c70e43d5f59f5d1c06c74e8439ef4ba33e6b6b640b000000005cc4987002f4d441fbf7286f25ef4cbd75e7d47156176e089b11ff1bac7811bf02\", \"target\": \"9bc42000\"}, \"status\": \"OK\"}}\n";        
 	snprintf(buffer, sizeof(buffer), fmt, motd);
-	rsp = buffer;
+       rsp = buffer;
+
         break;
     default:
         rsp = "{\"id\":1,\"jsonrpc\":\"2.0\",\"error\":null,\"result\":{\"status\":\"OK\"}}\n";
         break;
     }
     n++;
-
     send(cli_sck, rsp, strlen(rsp), 0);
     line[lnlen] = '\0';
     printf("RECV %s\nSEND %s\n", line, rsp);
